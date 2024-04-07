@@ -1,49 +1,90 @@
 package main
 
 import (
+	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"syscall"
-	"time"
+	"strconv"
 
 	"github.com/xmp-er/rcrd/helpers"
 )
 
 func main() {
 
+	//Defining the flag variables
+	var frameRates int
+	var library string
+	var audio_output string
+	var select_path string
+	var op_format string
+
+	flag.IntVar(&frameRates, "r", 30, "Specify the framerates of the video output")
+	flag.StringVar(&library, "c:v", "", "Specify the encoding library")
+	flag.StringVar(&audio_output, "c:a", "", "Specify the audio output format")
+	flag.StringVar(&select_path, "p", "n", "Specify if you want to specify location on startup as y/n")
+	flag.StringVar(&op_format, "f", "mkv", "Specify the format of the output video")
+
+	flag.Parse()
+
+	//Converting framerates to string
+	frames := strconv.Itoa(frameRates)
+
 	var cmd *exec.Cmd
 
-	operating_system := helpers.GetOS()
+	//Check the local file if there is a savepath or if flag to prompt for path is enable, if not prompt the user to select so, in the other case, move along with the default path
+	loc_Path, err := os.ReadFile("save_path.txt")
+	if err != nil || select_path == "y" {
+		if select_path == "y" {
+			temp_path, err_temp := helpers.SelectWorkingDirectory()
+			if err_temp != nil {
+				return
+			}
+			err_temp = os.WriteFile("save_path.txt", []byte(temp_path), 0644)
+			if err_temp != nil {
+				fmt.Println("Error while writing the path to file ", err)
+				return
+			}
+			loc_Path = []byte(temp_path)
+		} else if t_e, ok := err.(*os.PathError); ok {
+			fmt.Println("No file selected ", t_e)
+			temp_path, err_temp := helpers.SelectWorkingDirectory()
+			if err_temp != nil {
+				return
+			}
+			err_temp = os.WriteFile("save_path.txt", []byte(temp_path), 0644)
+			if err_temp != nil {
+				fmt.Println("Error while writing the path to file ", err)
+				return
+			}
+			loc_Path = []byte(temp_path)
+		}
+	}
+	local_path := string(loc_Path)
 
-	currentDir, err := os.Getwd()
+	//Get the FFMpeg command according to the specified Operating System
+	operating_system := helpers.GetOS()
+	cmd, err = helpers.GetCommand(operating_system, audio_output, library, frames, local_path, op_format)
+
+	fmt.Println("The command is ", cmd)
 	if err != nil {
-		fmt.Println("Error getting current directory: ", err)
 		return
 	}
 
-	outputFile := "output.mp4"
-	outputPath := filepath.Join(currentDir, outputFile)
+	//Execute the command and listen for cancellation signal
 
-	switch operating_system {
-	case "darwin":
-		cmd = exec.Command("ffmpeg", "-f", "avfoundation", "-i", "1:none", "-f", "avfoundation", "-i", ":1", "-c:v", "libx264", "-c:a", "aac", outputPath)
-	case "windows":
-		cmd = exec.Command("ffmpeg", "-f", "gdigrab", "-framerate", "30", "-i", "desktop", "-f", "dshow", "-i", "audio=virtual-audio-capturer", "-c:v", "libx264", "-c:a", "aac", outputPath)
-	case "linux":
-		cmd = exec.Command("ffmpeg", "-f", "x11grab", "-framerate", "25", "-i", ":0.0", "-f", "alsa", "-i", "default", "-c:v", "libx264", "-c:a", "aac", outputPath)
-	}
+	var stderr bytes.Buffer //So we are aware if we get a error in between
+	cmd.Stderr = &stderr
 
 	err = cmd.Start()
 	if err != nil {
-		fmt.Println("Error while starting the command ", err)
+		fmt.Println("Error while starting the command", err)
 	}
-	fmt.Println("recording started")
-	time.Sleep(5 * time.Second)
-	err = cmd.Process.Signal(syscall.SIGINT)
-	if err != nil {
-		fmt.Println("Error while stopping the process ", err)
+
+	cmd.Wait()
+	if len(stderr.String()) > 0 {
+		fmt.Println(stderr.String())
 	}
 
 }
