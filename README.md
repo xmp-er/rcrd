@@ -13,6 +13,7 @@
 
 ## 🔴Introduction
 [Index](#index)
+
 CLI Tool to record video and audio via selected source, uses FFMpeg in Backend
 ,initially a prompt will appear for save location that can be modified later, file is stored in the format `<date_month_year>/<timestamp>.<output-format>`
 
