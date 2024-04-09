@@ -13,15 +13,11 @@
 
 ## 🔴Introduction
 [Index](#index)
- 
-
 CLI Tool to record video and audio via selected source, uses FFMpeg in Backend
-
-Initially a prompt will appear for save location that can be modified later, file is stored in the format `<date_month_year>/<timestamp>.<output-format>`
+,initially a prompt will appear for save location that can be modified later, file is stored in the format `<date_month_year>/<timestamp>.<output-format>`
 
 ## 🎃Installation
 [Index](#index)
- 
 1. Clone the repository.
 2. Ensure you have FFMpeg installed on your system.
 3. Run the following commands:
@@ -30,7 +26,6 @@ Initially a prompt will appear for save location that can be modified later, fil
 
 ## 🎃Usage
 [Index](#index)
- 
 - Use the following command line flags to specify settings:
    - `-r <framerate>`: Specify the framerates of the video output.
    - `-c:v <library>`: Specify the encoding library.
@@ -42,29 +37,16 @@ Initially a prompt will appear for save location that can be modified later, fil
 
 ## 🎃Dependencies
 [Index](#index)
- 
   - FFMpeg
   - Go programming language
   
 ## 🎃FFMpeg Installation Instructions
 [Index](#index)
- 
-  
 #### 🔺For Darwin (macOS)
-[Index](#index)
- 
-  
 `brew install ffmpeg`
-  
 #### 🔺For Linux (Ubuntu)
-[Index](#index)
- 
-  
 `sudo apt-get install ffmpeg`
-  
 #### 🔺For Windows
-[Index](#index)
- 
  - Download the latest build from the official FFMpeg website: https://ffmpeg.org/download.html
  - Extract the downloaded zip file.
  - Add the FFMpeg bin directory to the system's PATH environment variable.
