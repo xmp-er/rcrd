@@ -19,12 +19,16 @@ func main() {
 	var audio_output string
 	var select_path string
 	var op_format string
+	var video_input string
+	var audio_input string
 
 	flag.IntVar(&frameRates, "r", 30, "Specify the framerates of the video output")
 	flag.StringVar(&library, "c:v", "", "Specify the encoding library")
 	flag.StringVar(&audio_output, "c:a", "", "Specify the audio output format")
 	flag.StringVar(&select_path, "p", "n", "Specify if you want to specify location on startup as y/n")
 	flag.StringVar(&op_format, "f", "mkv", "Specify the format of the output video")
+	flag.StringVar(&video_input, "vi", "", "Specify the video input source index")
+	flag.StringVar(&audio_input, "ai", "", "Specify the audio input source index")
 
 	flag.Parse()
 
@@ -65,9 +69,7 @@ func main() {
 
 	//Get the FFMpeg command according to the specified Operating System
 	operating_system := helpers.GetOS()
-	cmd, err = helpers.GetCommand(operating_system, audio_output, library, frames, local_path, op_format)
-
-	fmt.Println("The command is ", cmd)
+	cmd, err = helpers.GetCommand(operating_system, audio_output, library, frames, video_input, audio_input, local_path, op_format)
 	if err != nil {
 		return
 	}

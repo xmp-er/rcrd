@@ -18,7 +18,7 @@ func GetOS() string {
 	return os
 }
 
-func GetCommand(operating_system string, aud_op string, lib string, fps string, outputPath string, output_format string) (*exec.Cmd, error) {
+func GetCommand(operating_system string, aud_op string, lib string, fps string, vidInp string, audInp string, outputPath string, output_format string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 	timestamp := time.Now().Unix()
 	folder_name := time.Now().Format("02_January_2006")
@@ -46,13 +46,19 @@ func GetCommand(operating_system string, aud_op string, lib string, fps string, 
 			outputPath = temp_path
 
 		}
+		if vidInp == "" {
+			vidInp = "1:none"
+		}
+		if audInp == "" {
+			audInp = ":1"
+		}
 		err := os.MkdirAll(outputPath+"/"+folder_name, 0755)
 		if err != nil {
 			fmt.Println("Error creating directory ", err)
 			return nil, err
 		}
 		final_output := outputPath + "/" + folder_name + "/" + file_name + "." + output_format
-		cmd = exec.Command("ffmpeg", "-f", "avfoundation", "-i", "1:none", "-f", "avfoundation", "-r", fps, "-i", ":1", "-c:v", lib, "-c:a", aud_op, final_output)
+		cmd = exec.Command("ffmpeg", "-f", "avfoundation", "-i", vidInp, "-f", "avfoundation", "-r", fps, "-i", audInp, "-c:v", lib, "-c:a", aud_op, final_output)
 	case "windows":
 		if fps == "" {
 			fps = "30"
@@ -75,8 +81,14 @@ func GetCommand(operating_system string, aud_op string, lib string, fps string, 
 			outputPath = temp_path
 
 		}
+		if vidInp == "" {
+			vidInp = "desktop"
+		}
+		if audInp == "" {
+			audInp = "audio=virtual-audio-capturer"
+		}
 		final_output := outputPath + "/" + folder_name + "/" + file_name + "." + output_format
-		cmd = exec.Command("ffmpeg", "-f", "gdigrab", "-framerate", fps, "-i", "desktop", "-f", "dshow", "-i", "audio=virtual-audio-capturer", "-c:v", lib, "-c:a", aud_op, final_output)
+		cmd = exec.Command("ffmpeg", "-f", "gdigrab", "-framerate", fps, "-i", vidInp, "-f", "dshow", "-i", audInp, "-c:v", lib, "-c:a", aud_op, final_output)
 	case "linux":
 		if fps == "" {
 			fps = "30"
@@ -99,8 +111,14 @@ func GetCommand(operating_system string, aud_op string, lib string, fps string, 
 			outputPath = temp_path
 
 		}
+		if vidInp == "" {
+			vidInp = ":1.0"
+		}
+		if audInp == "" {
+			audInp = "default"
+		}
 		final_output := outputPath + "/" + folder_name + "/" + file_name + "." + output_format
-		cmd = exec.Command("ffmpeg", "-f", "x11grab", "-framerate", fps, "-i", ":1.0", "-f", "alsa", "-i", "default", "-c:v", lib, "-c:a", aud_op, final_output)
+		cmd = exec.Command("ffmpeg", "-f", "x11grab", "-framerate", fps, "-i", vidInp, "-f", "alsa", "-i", audInp, "-c:v", lib, "-c:a", aud_op, final_output)
 	}
 	return cmd, nil
 }
